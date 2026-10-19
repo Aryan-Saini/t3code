@@ -60,7 +60,7 @@ vi.mock("./session", () => ({
 vi.mock("./entities", () => ({
   useProjects: () => [],
   useThreadShells: () => [state.thread],
-  useServerConfigsWithProviders: () => new Map([["secondary", state.config]]),
+  useServerConfigs: () => new Map([["secondary", state.config]]),
 }));
 vi.mock("./server", async () => {
   const { Atom } = await import("effect/reactivity");

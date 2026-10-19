@@ -36,7 +36,7 @@ import {
 } from "./acknowledged-thread-messages";
 import { appAtomRegistry } from "./atom-registry";
 import { restoredNewTaskDraftKey } from "./new-task-draft-key";
-import { useProjects, useServerConfigsWithProviders, useThreadShells } from "./entities";
+import { useProjects, useServerConfigs, useThreadShells } from "./entities";
 import {
   clearPendingThreadCreationOutcome,
   pendingThreadCreationOutcomesAtom,
@@ -602,7 +602,7 @@ export function useThreadOutboxDrain(): void {
   const threads = useThreadShells();
   const creationOutcomes = useAtomValue(pendingThreadCreationOutcomesAtom);
   const projects = useProjects();
-  const serverConfigs = useServerConfigsWithProviders();
+  const serverConfigs = useServerConfigs();
   const { connectedEnvironments } = useRemoteConnectionStatus();
   const operableEnvironments = useEnvironmentsWithScope(
     connectedEnvironments,

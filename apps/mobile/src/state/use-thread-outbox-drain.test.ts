@@ -79,7 +79,7 @@ vi.mock("../lib/attachmentUpload", () => ({
 
 vi.mock("./entities", () => ({
   useProjects: () => [],
-  useServerConfigsWithProviders: () => new Map(),
+  useServerConfigs: () => new Map(),
   useThreadShells: () => [],
 }));
 
