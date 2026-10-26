@@ -4,6 +4,8 @@ import { userEvent } from "vite-plus/test/browser";
 
 import { act, render } from "../../../test/render";
 import { SidebarUpdatePill } from "./SidebarUpdatePill";
+import { SidebarUpdateCapsule } from "./SidebarUpdateCapsule";
+import { waitForUpdateRestart, postponeUpdateRestart } from "./updateEverythingRun";
 
 const mocks = vi.hoisted(() => {
   const listeners = new Set<() => void>();
@@ -93,4 +95,47 @@ describe("SidebarUpdatePill release notes", () => {
     await publish(nightlyUpdate(RELEASE_NOTES));
     await vi.waitFor(() => expect(releaseNotes()).not.toBeNull());
   });
+});
+
+it.each(["click", "Enter", " "])("skips the restart countdown with %s", async (input) => {
+  setup(null);
+  await using screen = await render(
+    <SidebarUpdateCapsule
+      run={{ localVersion: "1.1.0", phase: "countdown", restartAt: 5_000, machines: [] }}
+      local={null}
+      icon={null}
+    />,
+  );
+  const decision = waitForUpdateRestart(5_000);
+  try {
+    const restart = screen.getByRole("button", { name: /Restart now/ });
+    if (input === "click") await userEvent.click(restart);
+    else {
+      await userEvent.tab();
+      await userEvent.keyboard(input === "Enter" ? "{Enter}" : " ");
+    }
+    const resolved = vi.fn();
+    void decision.then(resolved);
+    await vi.waitFor(() => expect(resolved).toHaveBeenCalledWith(true));
+  } finally {
+    postponeUpdateRestart();
+  }
+});
+
+it("keeps Later separate from restarting immediately", async () => {
+  setup(null);
+  await using screen = await render(
+    <SidebarUpdateCapsule
+      run={{ localVersion: "1.1.0", phase: "countdown", restartAt: 5_000, machines: [] }}
+      local={null}
+      icon={null}
+    />,
+  );
+  const decision = waitForUpdateRestart(5_000);
+  try {
+    await userEvent.click(screen.getByRole("button", { name: "Later" }));
+    await expect(decision).resolves.toBe(false);
+  } finally {
+    postponeUpdateRestart();
+  }
 });
