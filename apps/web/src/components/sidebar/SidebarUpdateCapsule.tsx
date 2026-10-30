@@ -100,26 +100,28 @@ export function SidebarUpdateCapsule({
           view.tone === "failed" && "ring-1 ring-destructive/40 ring-inset",
         )}
       >
-        {countingDown ? (
-          <button
-            type="button"
-            aria-label={`Restart now. ${view.label}`}
-            className={cn(capsuleButtonClassName, "peer")}
-            onClick={restartUpdateNow}
-          />
-        ) : (
-          <PopoverTrigger
-            render={
-              <button
-                type="button"
-                aria-label={
-                  view.slow ? `${view.label} ${view.slow.status} ${view.slow.elapsed}` : view.label
-                }
-                className={capsuleButtonClassName}
-              />
+        <PopoverTrigger
+          onClick={(event) => {
+            if (countingDown) {
+              event.preventBaseUIHandler();
+              restartUpdateNow();
             }
-          />
-        )}
+          }}
+          aria-haspopup={countingDown ? false : "dialog"}
+          render={
+            <button
+              type="button"
+              aria-label={
+                countingDown
+                  ? `Restart now. ${view.label}`
+                  : view.slow
+                    ? `${view.label} ${view.slow.status} ${view.slow.elapsed}`
+                    : view.label
+              }
+              className={cn(capsuleButtonClassName, countingDown && "peer")}
+            />
+          }
+        />
         <span
           className={cn(
             capsuleLabelClassName,

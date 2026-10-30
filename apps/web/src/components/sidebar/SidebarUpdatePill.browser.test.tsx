@@ -111,6 +111,14 @@ it.each(["click", "Enter", " "])("skips the restart countdown with %s", async (i
   setup(null);
   await using screen = await render(
     <SidebarUpdateCapsule
+      run={{ localVersion: "1.1.0", phase: "servers", restartAt: null, machines: [] }}
+      local={null}
+      icon={null}
+    />,
+  );
+  await userEvent.tab();
+  await screen.rerender(
+    <SidebarUpdateCapsule
       run={{ localVersion: "1.1.0", phase: "countdown", restartAt: 5_000, machines: [] }}
       local={null}
       icon={null}
@@ -119,11 +127,12 @@ it.each(["click", "Enter", " "])("skips the restart countdown with %s", async (i
   const decision = waitForUpdateRestart(5_000);
   try {
     const restart = screen.getByRole("button", { name: /Restart now/ });
+    expect(document.activeElement).toBe(restart.element());
     if (input === "click") await userEvent.click(restart);
     else {
-      await userEvent.tab();
       await userEvent.keyboard(input === "Enter" ? "{Enter}" : " ");
     }
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
     const resolved = vi.fn();
     void decision.then(resolved);
     await vi.waitFor(() => expect(resolved).toHaveBeenCalledWith(true));
@@ -136,11 +145,21 @@ it("keeps Later separate from restarting immediately", async () => {
   setup(null);
   await using screen = await render(
     <SidebarUpdateCapsule
+      run={{ localVersion: "1.1.0", phase: "servers", restartAt: null, machines: [] }}
+      local={null}
+      icon={null}
+    />,
+  );
+  await userEvent.click(screen.getByRole("button"));
+  await expect.element(page.getByText("This app", { exact: true })).toBeVisible();
+  await screen.rerender(
+    <SidebarUpdateCapsule
       run={{ localVersion: "1.1.0", phase: "countdown", restartAt: 5_000, machines: [] }}
       local={null}
       icon={null}
     />,
   );
+  await expect.element(page.getByText("This app", { exact: true })).toBeVisible();
   const decision = waitForUpdateRestart(5_000);
   try {
     await userEvent.click(screen.getByRole("button", { name: "Later" }));
