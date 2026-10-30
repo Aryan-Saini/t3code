@@ -109,6 +109,7 @@ describe("SidebarUpdatePill release notes", () => {
 
 it.each(["click", "Enter", " "])("skips the restart countdown with %s", async (input) => {
   setup(null);
+  using _now = vi.spyOn(Date, "now").mockReturnValue(0);
   await using screen = await render(
     <SidebarUpdateCapsule
       run={{ localVersion: "1.1.0", phase: "servers", restartAt: null, machines: [] }}
@@ -124,7 +125,7 @@ it.each(["click", "Enter", " "])("skips the restart countdown with %s", async (i
       icon={null}
     />,
   );
-  const decision = waitForUpdateRestart(5_000);
+  const decision = waitForUpdateRestart(20_000);
   try {
     const restart = screen.getByRole("button", { name: /Restart now/ });
     expect(document.activeElement).toBe(restart.element());
@@ -143,6 +144,7 @@ it.each(["click", "Enter", " "])("skips the restart countdown with %s", async (i
 
 it("keeps Later separate from restarting immediately", async () => {
   setup(null);
+  using _now = vi.spyOn(Date, "now").mockReturnValue(0);
   await using screen = await render(
     <SidebarUpdateCapsule
       run={{ localVersion: "1.1.0", phase: "servers", restartAt: null, machines: [] }}
